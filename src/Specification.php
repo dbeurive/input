@@ -114,9 +114,10 @@ class Specification {
     /**
      * Set input's validator.
      * @param callable $inValidator This input represents the input's validator.
-     *        The function's signature must be: `string|true function($inValue)`.
+     *        The function's signature must be: `mixed|true function($inValue)`.
      *        * If the input's value is valid, then the function must return true.
-     *        * Otherwise, the function must return an error message.
+     *        * Otherwise, the function must return an error identifier.
+     *          Error identifiers may be anything you want (string, integer, objects...).
      * @return $this
      */
     public function setValidator(callable $inValidator) {

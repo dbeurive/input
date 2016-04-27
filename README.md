@@ -115,6 +115,7 @@ Inspect the status.
         if (count($status['inputs']) > 0) {
             echo "Some inputs' values are not valid:\n";
             foreach ($status['inputs'] as $_inputName => $_errorIdentifier) {
+                // Here, we returned strings (error messages)... but you can return whatever objects you want...
                 echo "  - $_inputName: $_errorIdentifier\n";
             }
     
