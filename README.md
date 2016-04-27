@@ -100,11 +100,11 @@ Inspect the status.
 * If the set of inputs values is valid, then the value of `$status` is `true`.
 * Otherwise, `$status` is an associative array. It contains two entries:
   * `inputs`: this entry points to a list of errors' identifiers that refer to inputs individually.
-  * `errors`: this entry points to a list of errors' identifiers returned by the final validator.
+  * `global`: this entry points to a list of errors' identifiers returned by the final validator.
 
 > The final validator is executed only if all inputs are individually valid.
 
-> The two entries (`inputs` and `errors`) always exist. However they may point to empty arrays.
+> The two entries (`inputs` and `global`) always exist. However they may point to empty arrays.
 
     if (true === $status) {
         echo "The set of inputs' values is valid\n";
@@ -125,7 +125,7 @@ Inspect the status.
     
             // This means that the final validation failed !
             echo "But the final validation failed:\n";
-            foreach ($status['errors'] as $_index => $_errorIdentifier) {
+            foreach ($status['global'] as $_index => $_errorIdentifier) {
                 // Here, we returned strings (error messages)... but you can return whatever objects you want...
                 echo "  - $_errorIdentifier\n";
             }
