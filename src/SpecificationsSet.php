@@ -83,7 +83,7 @@ class SpecificationsSet implements \Iterator {
      *             'inputs' => [ <input's name> => <error message>,
      *                           <input's name> => <error message>,
      *                               ... ],
-     *             'errors' => [ <error identifier>, <error identifier> ]
+     *             'global' => [ <error identifier>, <error identifier> ]
      *         ]
      */
     public function check(array $inList) {
@@ -114,11 +114,11 @@ class SpecificationsSet implements \Iterator {
             if (count($inputsErrors) == 0) {
                 return true;
             }
-            return [ 'inputs' => $inputsErrors, 'errors' => [] ];
+            return [ 'inputs' => $inputsErrors, 'global' => [] ];
         }
 
         if ((count($inputsErrors) > 0)) {
-            return [ 'inputs' => $inputsErrors, 'errors' => [] ];
+            return [ 'inputs' => $inputsErrors, 'global' => [] ];
         }
 
         // Call the final validator.
@@ -127,7 +127,7 @@ class SpecificationsSet implements \Iterator {
             return true;
         }
 
-        return [ 'inputs' => $inputsErrors, 'errors' => $errors ];
+        return [ 'inputs' => $inputsErrors, 'global' => $errors ];
     }
 
     /**

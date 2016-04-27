@@ -202,9 +202,9 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $list = ['A' => null, 'B' => 1, 'C' => null, 'D' => 10, 'V2' => 'A'];
         $this->assertCount(2, $this->__set->check($list));
         $this->assertArrayHasKey('inputs', $this->__set->check($list));
-        $this->assertArrayHasKey('errors', $this->__set->check($list));
+        $this->assertArrayHasKey('global', $this->__set->check($list));
         $this->assertCount(0, $this->__set->check($list)['inputs']); // No error on parameters.
-        $this->assertCount(1, $this->__set->check($list)['errors']); // But the final test fails.
+        $this->assertCount(1, $this->__set->check($list)['global']); // But the final test fails.
 
         // A may be null.
         // B must not be null.

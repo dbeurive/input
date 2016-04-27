@@ -99,8 +99,8 @@ Inspect the status.
 
 * If the set of inputs values is valid, then the value of `$status` is `true`.
 * Otherwise, `$status` is an associative array. It contains two entries:
-  * `inputs`: this entry points to a list of errors returned by the inputs' validators.
-  * `errors`: this entry points to a list of errors returned by the final validator.
+  * `inputs`: this entry points to a list of errors' identifiers that refer to inputs individually.
+  * `errors`: this entry points to a list of errors' identifiers returned by the final validator.
 
 > The final validator is executed only if all inputs are individually valid.
 

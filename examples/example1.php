@@ -80,7 +80,7 @@ if (true === $status) {
 
         // This means that the final validation failed !
         echo "But the final validation failed:\n";
-        foreach ($status['errors'] as $_index => $_errorIdentifier) {
+        foreach ($status['global'] as $_index => $_errorIdentifier) {
             // Here, we returned strings (error messages)... but you can return whatever objects you want...
             echo "  - $_errorIdentifier\n";
         }
