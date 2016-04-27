@@ -133,7 +133,7 @@ Inspect the status.
     
 ## Examples
 
-**[example1.php](https://github.com/dbeurive/config/blob/master/examples/example1.php)**: this example shows how to use the package.
+**[example1.php](https://github.com/dbeurive/input/blob/master/examples/example1.php)**: this example shows how to use the package.
 
-**[example2.php](https://github.com/dbeurive/config/blob/master/examples/example2.php)**: this example shows how to use the package.
+**[example2.php](https://github.com/dbeurive/input/blob/master/examples/example2.php)**: this example shows how to use the package.
 
