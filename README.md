@@ -25,7 +25,7 @@ This package implements this simple 2 steps validation process.
 > A specifications' set is an instance of `dbeurive\Input\SpecificationsSet`. 
 
 At this point, all inputs’ individual validity rules are defined. And an optional global validator that ensures a coherence between inputs’ values is specified.
-You can submit a set of inputs to the specifications’ set.
+You can submit a set of inputs' values to the specifications’ set.
 
 # Installation
 
