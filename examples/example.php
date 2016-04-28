@@ -28,15 +28,21 @@ $tokenSpecification = new Specification("Token");
 $tokenSpecification->setMandatory(false)
     ->setCanBeNull();
 
-// Create a set of specifications:
+// Create a set of specifications.
 
 $set = new SpecificationsSet();
 $set->addInputSpecification($pathSpecification)
     ->addInputSpecification($tokenSpecification);
 
+// Print a summary.
+
+foreach ($set->inputsSummary() as $_name => $_summary) {
+    echo "$_name => $_summary\n";
+}
+
 // Note: you may specify a final validator.
 // If the file exists, and if a token is specified, then make sure that the token is found in the file.
-// If everything is OK, the validator must return true.
+// If everything is OK, the validator must return an empty array.
 // Otherwise, it must return a list of errors' identifiers (you are free to return any kind of values...).
 // Note: here we return a list of error messages
 $finalValidator = function($inInputs) {
@@ -45,10 +51,10 @@ $finalValidator = function($inInputs) {
         if (false === strstr($data, $inInputs['Token'])) {
             return ["The file " . $inInputs['Path'] . " exists, but it does not contain the token <" . $inInputs['Token'] . "> !"];
         } else {
-            return true;
+            return [];
         }
     }
-    return true;
+    return [];
 };
 
 $set->setValidator($finalValidator);
@@ -61,28 +67,33 @@ $status = $set->check($values);
 
 // Inspect the status.
 
-if (true === $status) {
-    echo "The set of inputs' values is valid\n";
-} else {
-    /** @var array $status */
+if ($status) {
 
-    // Check for errors in inputs, taken individually.
-    if (count($status['inputs']) > 0) {
+    // Inputs are valid.
+    echo "The set of inputs' values is valid\n";
+
+} else {
+
+    // Inputs are not valid.
+
+    // Check the validity of errors looked in isolation from the others.
+    if ($set->hasErrorsOnInputsInIsolationFromTheOthers()) {
+
         echo "Some inputs' values are not valid:\n";
-        foreach ($status['inputs'] as $_inputName => $_errorIdentifier) {
+        foreach ($set->getErrorsOnInputsInIsolationFromTheOthers() as $_inputName => $_errorIdentifier) {
             // Here, we returned strings (error messages)... but you can return whatever objects you want...
             echo "  - $_inputName: $_errorIdentifier\n";
         }
 
-        // We do not check for the status of the final validation since this validation was not performed.
-    } else {
-        echo "All inputs' values are individually valid.\n";
+        exit(0); // The final validator is not executed.
+    }
 
-        // This means that the final validation failed !
-        echo "But the final validation failed:\n";
-        foreach ($status['global'] as $_index => $_errorIdentifier) {
-            // Here, we returned strings (error messages)... but you can return whatever objects you want...
-            echo "  - $_errorIdentifier\n";
-        }
+    echo "All inputs' values are individually valid.\n";
+
+    // This means that the final validation failed !
+    echo "But the final validation failed:\n";
+    foreach ($set->getErrorsOnFinalValidation() as $_index => $_errorIdentifier) {
+        // Here, we returned strings (error messages)... but you can return whatever objects you want...
+        echo "  - $_errorIdentifier\n";
     }
 }

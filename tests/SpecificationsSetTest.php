@@ -143,42 +143,72 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         // A, B and V1 are not mandatory.
         $list = ['C' => null, 'D' => 10, 'V2' => 'A'];
         $this->assertTrue($this->__set->check($list));
+        $this->assertFalse($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
 
         // A may be null.
         // B and V1 are not mandatory.
         $list = ['A' => null, 'C' => null, 'D' => 10, 'V2' => 'A'];
         $this->assertTrue($this->__set->check($list));
+        $this->assertFalse($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
+
         $list = ['A' => 1, 'C' => null, 'D' => 10, 'V2' => 'A'];
         $this->assertTrue($this->__set->check($list));
+        $this->assertFalse($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
 
         // A may be null.
         // B must not be null.
         $list = ['A' => null, 'B' => 1, 'C' => null, 'D' => 10, 'V2' => 'A'];
         $this->assertTrue($this->__set->check($list)); // V1 is not mandatory.
+        $this->assertFalse($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
+
         $list = ['A' => null, 'B' => null, 'C' => null, 'D' => 10, 'V2' => 'A'];
-        $this->assertCount(1, $this->__set->check($list)['inputs']); // B is not valid.
+        $this->assertFalse($this->__set->check($list)); // B is not valid.
+        $this->assertCount(1, $this->__set->getErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertTrue($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
+
 
         // A may be null.
         // B must not be null.
         // V1 must be "A|B|C".
         $list = ['A' => null, 'B' => 1, 'V1' => 'B', 'C' => null, 'D' => 10, 'V2' => 'A'];
         $this->assertTrue($this->__set->check($list));
+        $this->assertFalse($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
+
         $list = ['A' => null, 'B' => 1, 'V1' => 'D', 'C' => null, 'D' => 10, 'V2' => 'A'];
-        $this->assertCount(1, $this->__set->check($list)['inputs']); // V1 is not valid
+        $this->assertFalse($this->__set->check($list)); // V1 is not valid
+        $this->assertCount(1, $this->__set->getErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertTrue($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
+
         $list = ['A' => null, 'B' => null, 'V1' => 'D', 'C' => null, 'D' => 10, 'V2' => 'A'];
-        $this->assertCount(2, $this->__set->check($list)['inputs']); // V1 and B are not valid
+        $this->assertFalse($this->__set->check($list)); // V1 and B are not valid
+        $this->assertCount(2, $this->__set->getErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertTrue($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
 
         // C is mandatory.
         // D is mandatory.
         // V2 is mandatory.
         $list = ['A' => null, 'B' => 1, 'V1' => 'B'];
-        $this->assertCount(3, $this->__set->check($list)['inputs']); // C, D, V2 are not valid.
+        $this->assertFalse($this->__set->check($list));
+        $this->assertCount(3, $this->__set->getErrorsOnInputsInIsolationFromTheOthers()); // C, D, V2 are not valid.
+        $this->assertTrue($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
 
         // C is mandatory.
         // D must not be null.
         // V2 is mandatory.
         $list = ['A' => null, 'B' => 1, 'V1' => 'B', 'D' => null];
-        $this->assertCount(3, $this->__set->check($list)['inputs']); // C, D, V2 are not valid.
+        $this->assertFalse($this->__set->check($list));
+        $this->assertCount(3, $this->__set->getErrorsOnInputsInIsolationFromTheOthers()); // C, D, V2 are not valid.
+        $this->assertTrue($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
 
         // -------------------------------------------------------------------------------------------------------------
         // Test with validator.
@@ -187,11 +217,11 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         $validator = function($inInputs) {
             if (array_key_exists('A', $inInputs) && array_key_exists('B', $inInputs)) {
                 if (is_int($inInputs['A']) && is_int($inInputs['B'])) {
-                    return true;
+                    return [];
                 }
-                return [ "A and B must be integers!" ];
+                return ["A and B must be integers!"];
             }
-            return true;
+            return [];
         };
 
         $this->__set->setValidator($validator);
@@ -200,16 +230,19 @@ class ConfigTest extends PHPUnit_Framework_TestCase
         // B must not be null.
         // But, if A and B are simultaneously defined, then they must be integers => check will fail.
         $list = ['A' => null, 'B' => 1, 'C' => null, 'D' => 10, 'V2' => 'A'];
-        $this->assertCount(2, $this->__set->check($list));
-        $this->assertArrayHasKey('inputs', $this->__set->check($list));
-        $this->assertArrayHasKey('global', $this->__set->check($list));
-        $this->assertCount(0, $this->__set->check($list)['inputs']); // No error on parameters.
-        $this->assertCount(1, $this->__set->check($list)['global']); // But the final test fails.
+        $this->assertFalse($this->__set->check($list));
+        $this->assertCount(0, $this->__set->getErrorsOnInputsInIsolationFromTheOthers()); // No error on parameters.
+        $this->assertCount(1, $this->__set->getErrorsOnFinalValidation()); // But the final test fails.
+        $this->assertFalse($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertTrue($this->__set->hasErrorsOnFinalValidation());
 
         // A may be null.
         // B must not be null.
         // A and B are integers => the check will succeed.
         $list = ['A' => 10, 'B' => 1, 'C' => null, 'D' => 10, 'V2' => 'A'];
         $this->assertTrue($this->__set->check($list));
+        $this->assertFalse($this->__set->hasErrorsOnInputsInIsolationFromTheOthers());
+        $this->assertFalse($this->__set->hasErrorsOnFinalValidation());
+
     }
 }

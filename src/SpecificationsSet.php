@@ -25,6 +25,16 @@ class SpecificationsSet implements \Iterator {
      *      This function is executed if all inputs' values are valid, relatively to their associated validators.
      */
     private $__validator = null;
+    /**
+     * @var array This array contains the list of errors that result from the validation of each input seen in isolation from the others.
+     *      This array associates inputs (array's keys) to errors (array's values).
+     */
+    private $__errorsOnInputs = [];
+    /**
+     * @var array This array contains the list of errors that result from the final validation.
+     *      This validation checks the global validity of the set of inputs: inputs are checked in relation to the others.
+     */
+    private $__errorsOnFinalValidation = [];
 
     /**
      * Add an input' specification to the set of specifications.
@@ -52,12 +62,12 @@ class SpecificationsSet implements \Iterator {
     /**
      * Set the final validator.
      * @param callable $inValidator Function used to perform a final validation.
-     *        If all inputs' values are valid individually, then a final validator is executed.
-     *        The validator signature must be: `array|true function(array $inputsValues)`.
+     *        Inputs should be validated in relation to the others.
+     *        If all inputs' values are valid individually, then the final validator (if specified) is executed.
+     *        The validator signature must be: `array function(array $inputsValues)`.
      *        `$inputsValues`: associative array "input's name" => "input's value".
-     *        If the inputs are valid then the function must return true.
-     *        Otherwise, the function must return an array of error identifiers.
-     *        Error identifiers may be anything you want (string, integer, objects...).
+     *        If the inputs are valid then the function must return an empty array.
+     *        Otherwise, the function must return a (non-empty) array of error identifiers.
      * @return $this
      */
     public function setValidator(callable $inValidator) {
@@ -76,26 +86,21 @@ class SpecificationsSet implements \Iterator {
     /**
      * This method checks a given set of inputs' values against the inputs' specifications.
      * @param array $inList The set of inputs' values to check.
-     * @return array|true If the lists of inputs' values is valid, then the method returns true.
-     *         Otherwise, the function returns an associative array.
-     *         The returned associative array has the following structure (please, see the provided examples):
-     *         [
-     *             'inputs' => [ <input's name> => <error message>,
-     *                           <input's name> => <error message>,
-     *                               ... ],
-     *             'global' => [ <error identifier>, <error identifier> ]
-     *         ]
+     * @return true If the lists of inputs' values is valid, then the method returns true.
+     *         Otherwise, the function returns false.
      */
     public function check(array $inList) {
-        $inputsErrors = [];
+        $this->__errorsOnFinalValidation = [];
+        $this->__errorsOnInputs = [];
 
+        // Validate inputs in isolation to the others.
         /** @var Specification $_specification */
         foreach ($this->__inputsSpecifications as $_name => $_specification) {
 
             // Make sure that the input is defined, if it is mandatory.
             if ($_specification->getMandatory()) {
                 if (! array_key_exists($_name, $inList)) {
-                    $inputsErrors[$_name] = "The input which name is \"${_name}\" is mandatory!";
+                    $this->__errorsOnInputs[$_name] = "The input which name is \"${_name}\" is mandatory!";
                     continue;
                 }
             }
@@ -106,28 +111,63 @@ class SpecificationsSet implements \Iterator {
 
             $status = $_specification->checkValue($inList[$_name]);
             if (true !== $status) {
-                $inputsErrors[$_name] = $status;
+                $this->__errorsOnInputs[$_name] = $status;
             }
         }
 
+        // If some inputs are not valid in isolation from the others, then we do not proceed to the final validation.
+        if ((count($this->__errorsOnInputs) > 0)) {
+            return false;
+        }
+
+        // If no final validation is planned, then the validation's status depends on the validation of inputs in isolation from the others
         if (is_null($this->__validator)) {
-            if (count($inputsErrors) == 0) {
-                return true;
-            }
-            return [ 'inputs' => $inputsErrors, 'global' => [] ];
-        }
-
-        if ((count($inputsErrors) > 0)) {
-            return [ 'inputs' => $inputsErrors, 'global' => [] ];
+            return count($this->__errorsOnFinalValidation) == 0;
         }
 
         // Call the final validator.
-        $errors = call_user_func($this->__validator, $inList);
-        if (true === $errors) {
+        $this->__errorsOnFinalValidation = call_user_func($this->__validator, $inList);
+        if (0 == count($this->__errorsOnFinalValidation)) {
             return true;
         }
 
-        return [ 'inputs' => $inputsErrors, 'global' => $errors ];
+        return false;
+    }
+
+    /**
+     * Test if the some inputs are invalid in isolation to the others.
+     * @return bool If some inputs are invalid in isolation to the others, then the method returns true.
+     *         Otherwise, it returns the value false.
+     */
+    public function hasErrorsOnInputsInIsolationFromTheOthers() {
+        return count($this->__errorsOnInputs) > 0;
+    }
+
+    /**
+     * Test if the inputs are invalid in relations to the others.
+     * @return bool If some inputs are invalid in relation to the others, then the method returns true.
+     *         Otherwise, it returns the value false.
+     */
+    public function hasErrorsOnFinalValidation() {
+        return count($this->__errorsOnFinalValidation) > 0;
+    }
+
+    /**
+     * Return the list of errors detected while validating each input in isolation to the others.
+     * @return array The method returns an association between inputs and errors' identifiers.
+     *         * Array's keys: inputs' names.
+     *         * Array's values: errors' identifiers.
+     */
+    public function getErrorsOnInputsInIsolationFromTheOthers() {
+        return $this->__errorsOnInputs;
+    }
+
+    /**
+     * Return the list of errors detected while validating inputs in relations to the others.
+     * @return array The method returns a list of errors' identifiers.
+     */
+    public function getErrorsOnFinalValidation() {
+        return $this->__errorsOnFinalValidation;
     }
 
     /**
@@ -135,7 +175,7 @@ class SpecificationsSet implements \Iterator {
      * @return array The method returns a summary of all inputs' specifications.
      *         The returned array has the following structure: [<input's name> => <specification>, <input's name> => <specification>...]
      */
-    public function toString() {
+    public function inputsSummary() {
         $res = [];
         /** @var Specification $_s */
         foreach ($this->__inputsSpecifications as $_s) {
