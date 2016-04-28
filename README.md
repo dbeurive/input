@@ -2,12 +2,30 @@
 
 This package is an implementation of a simple inputs' manager.
 
-The user defined a set of inputs’ specifications. An input's specification includes the following information:
+Inputs validation is a common task. This process often involves two steps :
 
-* The input's name.
-* Is the input mandatory ?
-* Can the input’s value be null?
-* A specific validator. A validator is a simple function.
+* First, we validate each input in isolation to the others.
+* Then, if all inputs are individually valid, we validate the set of inputs in relation to the others.
+
+For example, let’s consider the validation of a register form.
+
+* Some fields are « standalone ». This is the case, for example, for the first name. The validity of the entered value does not depend on another field’s value.
+* Other fields, however, cannot be validated in isolation to the others. Typically, this is the case, for the « passwords » fields. Often, a register form asks you to confirm a password. Thus, you have two input fields for the password, and the values of these fields must be identical.
+
+This package implements this simple 2 steps validation process.
+
+* First, you specify each input. These specifications will be used to validate each input in isolation to the others.
+  A specification contains the following information : what is the input’s name ? Is the input mandatory ?
+  Can the input’s value be null ? Does the input need a special validator ?
+* Then, you regroup the previously created specifications into a set of specifications.
+  You may assign to the specifications’ set a global validator that will be used to validate all entries in relations to the others.
+  Please note that this optional validator is executed if all inputs are valid (according to their respective specifications) in isolation to the others. 
+
+> Inputs' specifications are instances of `dbeurive\Input\Specification`.
+> A specifications' set is an instance of `dbeurive\Input\SpecificationsSet`. 
+
+At this point, all inputs’ individual validity rules are defined. And an optional global validator that ensures a coherence between inputs’ values is specified.
+You can submit a set of inputs to the specifications’ set.
 
 # Installation
 
