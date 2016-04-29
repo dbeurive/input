@@ -122,7 +122,7 @@ class SpecificationsSet implements \Iterator {
 
         // If no final validation is planned, then the validation's status depends on the validation of inputs in isolation from the others
         if (is_null($this->__validator)) {
-            return count($this->__errorsOnFinalValidation) == 0;
+            return true;
         }
 
         // Call the final validator.
