@@ -18,7 +18,7 @@ test:
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-create-composer:
+composer:
 ifndef version
 	$(error version is not defined) 
 endif
@@ -36,7 +36,7 @@ artifact:
 ifndef version
 	$(error version is not defined) 
 endif
-	$(MAKE) create-composer
+	$(MAKE) composer
 	$(MAKE) clean
 	cd $(MAKEFILE_DIR) && \
    rm -f $(ARTIFACTS_DIR)/$(VENDOR)-$(PACKAGE_NAME)-$(version).zip && \
@@ -52,7 +52,9 @@ endif
 ifndef comment
 	$(error comment is not defined) 
 endif
-	$(MAKE) create-composer
+	$(MAKE) composer
+	git add composer.json
+	git commit -m "Create new composer's specifications"
 	git push origin master
 	git tag
 	git tag -a $(version) -m "$(comment)"
