@@ -38,6 +38,7 @@ ifndef version
 endif
 	$(MAKE) composer
 	$(MAKE) clean
+	rm -f $(ARTIFACTS_DIR)/$(VENDOR)-$(PACKAGE_NAME)-$(version).zip
 	cd $(MAKEFILE_DIR) && \
    rm -f $(ARTIFACTS_DIR)/$(VENDOR)-$(PACKAGE_NAME)-$(version).zip && \
    find . -not -path '*/\.*' -print | egrep '^\./src|\./composer.json$$' \
