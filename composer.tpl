@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "__VERSION__",
   "name": "dbeurive/input",
   "description": "This package contains a very basic inputs manager.",
   "license": "MIT",
